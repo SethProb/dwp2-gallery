@@ -227,19 +227,20 @@
     }
     .lb-shield { position: absolute; inset: 0; border-radius: 6px; }
     .lb-close {
-      position: absolute;
-      top: -12px; right: -12px;
-      width: 28px; height: 28px;
+      position: fixed;
+      top: 20px; right: 24px;
+      width: 36px; height: 36px;
       border-radius: 50%;
-      background: rgba(255,255,255,0.12);
-      border: 0.5px solid rgba(255,255,255,0.25);
-      color: rgba(255,255,255,0.75);
-      font-size: 14px;
+      background: rgba(255,255,255,0.1);
+      border: 0.5px solid rgba(255,255,255,0.2);
+      color: rgba(255,255,255,0.7);
+      font-size: 16px;
       cursor: pointer;
       display: flex; align-items: center; justify-content: center;
       transition: background 0.15s, color 0.15s;
+      z-index: 100000;
     }
-    .lb-close:hover { background: rgba(255,255,255,0.25); color: #fff; }
+    .lb-close:hover { background: rgba(255,255,255,0.22); color: #fff; }
 
     .lb-name {
       font-family: 'Playfair Display', serif;
@@ -298,10 +299,10 @@
   </div>
 
   <div id="lb-overlay">
+    <button class="lb-close" id="lb-close">✕</button>
     <div class="lb-inner">
       <canvas id="lb-canvas"></canvas>
       <div class="lb-shield"></div>
-      <button class="lb-close" id="lb-close">✕</button>
     </div>
     <div class="lb-name" id="lb-name"></div>
     <div class="lb-nav">
