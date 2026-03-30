@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>DWP2 — Your Artwork</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #fff;
+      color: #111;
+      padding: 48px 32px;
+      max-width: 1080px;
+      margin: 0 auto;
+    }
+
+    /* ── Header ── */
+    .hdr {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 16px;
+      border-bottom: 0.5px solid #e0e0e0;
+      padding-bottom: 14px;
+      margin-bottom: 1.5rem;
+    }
+    .hdr-left { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+    .hdr-title {
+      font-family: 'Playfair Display', serif;
+      font-size: 22px;
+      font-weight: 400;
+      letter-spacing: -0.02em;
+      line-height: 1;
+      color: #111;
+    }
+    .hdr-count {
+      font-size: 11px;
+      color: #888;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-top: 4px;
+    }
+
+    /* ── Search ── */
+    .search-outer {
+      display: flex;
+      align-items: center;
+      border: 0.5px solid #ccc;
+      border-radius: 8px;
+      background: #fff;
+      height: 32px;
+      width: 200px;
+      flex-shrink: 0;
+      overflow: hidden;
+      transition: border-color 0.15s;
+    }
+    .search-outer:hover { border-color: #aaa; }
+    .search-outer:focus-within { border-color: #999; box-shadow: 0 0 0 2px rgba(0,0,0,0.05); }
+
+    .s-icon {
+      width: 30px;
+      flex-shrink: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .s-icon svg {
+      width: 12px;
+      height: 12px;
+      stroke: #888;
+      opacity: 0.6;
+      display: block;
+    }
+
+    .s-input {
+      flex: 1;
+      min-width: 0;
+      height: 100%;
+      font-family: 'DM Sans', sans-serif;
+      font-size: 13px;
+      color: #111;
+      background: transparent;
+      border: none;
+      border-left: 0.5px solid #e5e5e5;
+      outline: none;
+      box-shadow: none;
+      -webkit-appearance: none;
+      appearance: none;
+      padding: 0 8px;
+      margin: 0;
+    }
+    .s-input::placeholder { color: #bbb; }
+
+    .s-clear {
+      flex-shrink: 0;
+      width: 0;
+      overflow: hidden;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: transparent;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 0;
+      color: #888;
+      font-size: 11px;
+      line-height: 1;
+      opacity: 0;
+      transition: width 0.15s, opacity 0.15s;
+    }
+    .s-clear.visible { width: 24px; opacity: 0.45; pointer-events: all; }
+    .s-clear.visible:hover { opacity: 1; }
+
+    /* ── Grid ── */
+    #grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 1px;
+      background: #e0e0e0;
+      border: 0.5px solid #e0e0e0;
+      border-radius: 8px;
+      overflow: hidden;
+    }
+    @media (max-width: 600px) { #grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 380px) { #grid { grid-template-columns: repeat(1, minmax(0, 1fr)); } }
+
+    /* ── Card ── */
+    .card { background: #fff; cursor: pointer; overflow: hidden; }
+    .card-img {
+      width: 100%;
+      aspect-ratio: 4/3;
+      overflow: hidden;
+      position: relative;
+      background: #f5f5f5;
+    }
+    .card-img canvas {
+      width: 100%;
+      height: 100%;
+      display: block;
+      transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+    }
+    .card:hover .card-img canvas { transform: scale(1.06); }
+    .card-shield { position: absolute; inset: 0; z-index: 2; }
+
+    .card-caption {
+      padding: 9px 11px 11px;
+      border-top: 0.5px solid #ebebeb;
+      background: #fff;
+      transition: background 0.15s;
+    }
+    .card:hover .card-caption { background: #fafafa; }
+
+    .card-name {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 13px;
+      color: #111;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      line-height: 1.3;
+    }
+    .card-view {
+      font-size: 10px;
+      color: #999;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      margin-top: 4px;
+      opacity: 0;
+      transform: translateY(3px);
+      transition: opacity 0.2s, transform 0.2s;
+    }
+    .card:hover .card-view { opacity: 1; transform: translateY(0); }
+
+    /* ── Load more ── */
+    #load-more-wrap { text-align: center; margin-top: 1.25rem; }
+    #load-more {
+      font-size: 13px;
+      padding: 9px 28px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      letter-spacing: 0.03em;
+      background: #fff;
+      border: 0.5px solid #ccc;
+      border-radius: 8px;
+      color: #111;
+      transition: background 0.15s, border-color 0.15s;
+    }
+    #load-more:hover { background: #f5f5f5; border-color: #aaa; }
+    #load-more-wrap.hidden { display: none; }
+
+    .no-results {
+      text-align: center;
+      padding: 3rem 0;
+      font-size: 13px;
+      color: #888;
+      display: none;
+    }
+
+    /* ── Lightbox ── */
+    #lb-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(8, 8, 8, 0.9);
+      z-index: 99999;
+      align-items: center;
+      justify-content: center;
+      flex-direction: column;
+      gap: 14px;
+      padding: 20px;
+    }
+    #lb-overlay.open { display: flex; }
+
+    .lb-inner { position: relative; }
+    #lb-canvas {
+      display: block;
+      border-radius: 6px;
+      max-width: min(88vw, 640px);
+      max-height: min(65vh, 440px);
+    }
+    .lb-shield { position: absolute; inset: 0; border-radius: 6px; }
+    .lb-close {
+      position: absolute;
+      top: -12px; right: -12px;
+      width: 28px; height: 28px;
+      border-radius: 50%;
+      background: rgba(255,255,255,0.12);
+      border: 0.5px solid rgba(255,255,255,0.25);
+      color: rgba(255,255,255,0.75);
+      font-size: 14px;
+      cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: background 0.15s, color 0.15s;
+    }
+    .lb-close:hover { background: rgba(255,255,255,0.25); color: #fff; }
+
+    .lb-name {
+      font-family: 'Playfair Display', serif;
+      font-style: italic;
+      font-size: 18px;
+      color: rgba(255,255,255,0.92);
+      text-align: center;
+    }
+    .lb-nav { display: flex; gap: 8px; }
+    .lb-nav button {
+      background: rgba(255,255,255,0.08);
+      border: 0.5px solid rgba(255,255,255,0.15);
+      color: rgba(255,255,255,0.65);
+      padding: 8px 22px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 13px;
+      font-family: 'DM Sans', sans-serif;
+      min-width: 80px;
+      transition: background 0.15s, color 0.15s;
+    }
+    .lb-nav button:hover { background: rgba(255,255,255,0.2); color: #fff; }
+
+    @media (max-width: 480px) {
+      body { padding: 24px 16px; }
+      .hdr { flex-wrap: wrap; }
+      .search-outer { width: 100%; }
+    }
+  </style>
+</head>
+<body>
+
+  <div id="wrap">
+    <div class="hdr">
+      <div class="hdr-left">
+        <div class="hdr-title">Your Artwork</div>
+        <div class="hdr-count" id="count"></div>
+      </div>
+      <div class="search-outer">
+        <div class="s-icon">
+          <svg viewBox="0 0 16 16" fill="none" stroke-width="1.6">
+            <circle cx="6.5" cy="6.5" r="4.5"/>
+            <line x1="10.5" y1="10.5" x2="14" y2="14"/>
+          </svg>
+        </div>
+        <input class="s-input" type="text" id="search" placeholder="Search by name" autocomplete="off" spellcheck="false" />
+        <button class="s-clear" id="clear-search">✕</button>
+      </div>
+    </div>
+
+    <div id="grid"></div>
+    <div class="no-results" id="no-results">No entries match your search.</div>
+    <div id="load-more-wrap">
+      <button id="load-more">Load more</button>
+    </div>
+  </div>
+
+  <div id="lb-overlay">
+    <div class="lb-inner">
+      <canvas id="lb-canvas"></canvas>
+      <div class="lb-shield"></div>
+      <button class="lb-close" id="lb-close">✕</button>
+    </div>
+    <div class="lb-name" id="lb-name"></div>
+    <div class="lb-nav">
+      <button id="lb-prev">← Prev</button>
+      <button id="lb-next">Next →</button>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('contextmenu', e => e.preventDefault());
+    document.addEventListener('dragstart', e => e.preventDefault());
+    document.addEventListener('keydown', e => {
+      if ((e.ctrlKey || e.metaKey) && ['s','u','p'].includes(e.key.toLowerCase())) e.preventDefault();
+    });
+
+    const PALETTES = [
+      ['#E8D5C4','#C4956A','#8B6355'],['#C8D8E8','#7FA8C8','#4A6E8A'],
+      ['#D4E8D4','#7AB87A','#4A7A4A'],['#E8D4E8','#B87AB8','#7A4A7A'],
+      ['#E8E4C8','#C8B870','#8A7A40'],['#D4D8E8','#8090C0','#485888'],
+      ['#E8CCC8','#C08888','#885050'],['#C8E8E4','#70C0B8','#407870'],
+      ['#E8DCE0','#C09098','#806068'],['#EDE8D4','#B8A870','#7A6A40'],
+      ['#D4E4EC','#70A8C8','#405878'],['#ECE4D4','#C8A07A','#885840'],
+      ['#D8E8D4','#88C078','#487840'],['#E8D4DC','#C07890','#884858'],
+      ['#D8D4E8','#9888C8','#585078'],['#E8ECD4','#A8C070','#607840'],
+      ['#E4D4E8','#A878C8','#685088'],['#D4E8E4','#78C0A8','#407868'],
+    ];
+
+    // ── In production, replace this with your Google Sheet CSV URL ──
+    const SHEET_CSV_URL = '';
+
+    const DEMO_NAMES = [
+      {first:'Margot',last:'Villeneuve'},{first:'James',last:'Thornton'},
+      {first:'Selin',last:'Arslan'},{first:'Nico',last:'Ferrara'},
+      {first:'Priya',last:'Mehta'},{first:'Lena',last:'Brandt'},
+      {first:'Omar',last:'El-Amin'},{first:'Claire',last:'Dupont'},
+      {first:'Hiroshi',last:'Tanaka'},{first:'Sofia',last:'Esposito'},
+      {first:'Marcus',last:'Webb'},{first:'Yuki',last:'Nakamura'},
+      {first:'Elena',last:'Vasquez'},{first:'Tom',last:'Okafor'},
+      {first:'Ines',last:'Moreau'},{first:'David',last:'Kowalski'},
+      {first:'Amara',last:'Diallo'},{first:'Ben',last:'Fletcher'},
+    ];
+
+    const PAGE_SIZE = 9;
+    let shown = 0, lbIdx = 0, filtered = [], searchQ = '';
+
+    function shuffle(a) {
+      const r = [...a];
+      for (let i = r.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [r[i], r[j]] = [r[j], r[i]];
+      }
+      return r;
+    }
+
+    function dName(f, l) {
+      f = (f || '').trim(); l = (l || '').trim();
+      if (!f && !l) return 'Anonymous';
+      if (!l) return f;
+      return f + ' ' + l[0].toUpperCase() + '.';
+    }
+
+    function parseCSV(text) {
+      return text.trim().split('\n').map(line => {
+        const cols = []; let cur = '', inQ = false;
+        for (const c of line) {
+          if (c === '"') inQ = !inQ;
+          else if (c === ',' && !inQ) { cols.push(cur.trim()); cur = ''; }
+          else cur += c;
+        }
+        cols.push(cur.trim()); return cols;
+      });
+    }
+
+    function makeDemoCanvas(w, h, palette, idx) {
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const ctx = c.getContext('2d'); const [light, mid, dark] = palette;
+      ctx.fillStyle = light; ctx.fillRect(0, 0, w, h); ctx.globalAlpha = 1;
+      const P = [
+        () => { for (let i = 0; i < 6; i++) { ctx.beginPath(); ctx.arc(w*0.2+i*w*0.13, h*0.5+Math.sin(i*1.2)*h*0.22, w*0.16, 0, Math.PI*2); ctx.fillStyle = i%2===0?mid:dark; ctx.globalAlpha = 0.3+i*0.04; ctx.fill(); } },
+        () => { for (let i = 0; i < 7; i++) { ctx.fillStyle = i%2===0?mid:dark; ctx.globalAlpha = 0.18+i%3*0.1; ctx.fillRect(i*w/7, 0, w/7, h); } },
+        () => { for (let y = 0; y < h; y+=h/5) for (let x = 0; x < w; x+=w/4) { ctx.beginPath(); ctx.arc(x+w/8, y+h/10, w*0.11, 0, Math.PI*2); ctx.fillStyle = (Math.floor(x/(w/4))+Math.floor(y/(h/5)))%2===0?mid:dark; ctx.globalAlpha = 0.28; ctx.fill(); } },
+        () => { const g = ctx.createLinearGradient(0,0,w,h); g.addColorStop(0,light); g.addColorStop(0.5,mid); g.addColorStop(1,dark); ctx.fillStyle = g; ctx.globalAlpha = 1; ctx.fillRect(0,0,w,h); },
+        () => { for (let i = 0; i < 5; i++) { ctx.beginPath(); ctx.moveTo(w*0.05+i*w*0.2, 0); ctx.lineTo(w*0.25+i*w*0.2, h); ctx.strokeStyle = i%2===0?mid:dark; ctx.lineWidth = w*0.1; ctx.globalAlpha = 0.35; ctx.stroke(); } },
+        () => { for (let r = w*0.75; r > 0; r -= w*0.13) { ctx.beginPath(); ctx.arc(w/2,h/2,r,0,Math.PI*2); ctx.fillStyle = r%(w*0.26)<w*0.13?mid:light; ctx.globalAlpha = 0.45; ctx.fill(); } },
+        () => { ctx.fillStyle = dark; ctx.globalAlpha = 0.12; ctx.fillRect(0,0,w,h); for (let i = 0; i < 4; i++) { ctx.beginPath(); ctx.arc(w*(0.2+i*0.2), h*(0.3+i%2*0.3), w*0.2, 0, Math.PI*2); ctx.fillStyle = i%2===0?mid:dark; ctx.globalAlpha = 0.22; ctx.fill(); } },
+        () => { for (let x = 0; x < w; x+=w/6) for (let y = 0; y < h; y+=h/4) { ctx.fillStyle = (Math.floor(x/(w/6))+Math.floor(y/(h/4)))%2===0?mid:dark; ctx.globalAlpha = 0.22; ctx.fillRect(x,y,w/6,h/4); } },
+        () => { const g = ctx.createRadialGradient(w*0.4,h*0.4,0,w*0.5,h*0.5,w*0.65); g.addColorStop(0,mid); g.addColorStop(1,dark); ctx.fillStyle = g; ctx.globalAlpha = 0.65; ctx.fillRect(0,0,w,h); },
+      ];
+      ctx.globalAlpha = 1; P[idx % P.length](); ctx.globalAlpha = 1; return c;
+    }
+
+    function makeImageCanvas(w, h, url) {
+      const c = document.createElement('canvas'); c.width = w; c.height = h;
+      const ctx = c.getContext('2d');
+      const img = new Image(); img.crossOrigin = 'anonymous';
+      img.onload = () => {
+        const scale = Math.max(w / img.naturalWidth, h / img.naturalHeight);
+        const sw = img.naturalWidth * scale, sh = img.naturalHeight * scale;
+        ctx.drawImage(img, (w - sw) / 2, (h - sh) / 2, sw, sh);
+      };
+      img.onerror = () => { ctx.fillStyle = '#eee'; ctx.fillRect(0,0,w,h); };
+      img.src = url;
+      return c;
+    }
+
+    const grid = document.getElementById('grid');
+    const countEl = document.getElementById('count');
+    const lbOverlay = document.getElementById('lb-overlay');
+    const lbCanvas = document.getElementById('lb-canvas');
+    const lbName = document.getElementById('lb-name');
+    const noResults = document.getElementById('no-results');
+    const clearBtn = document.getElementById('clear-search');
+    const searchEl = document.getElementById('search');
+
+    let baseEntries = [];
+
+    async function init() {
+      if (SHEET_CSV_URL) {
+        try {
+          const res = await fetch('https://corsproxy.io/?' + encodeURIComponent(SHEET_CSV_URL));
+          const text = await res.text();
+          let rows = parseCSV(text).slice(1);
+          baseEntries = shuffle(
+            rows
+              .filter(r => r[0] && (r[3] || '').trim().toLowerCase() === 'approved')
+              .map((r, i) => ({
+                url: r[0].replace(/^"|"$/g, '').trim(),
+                first: r[1] || '', last: r[2] || '',
+                isReal: true, palette: PALETTES[i % PALETTES.length], idx: i
+              }))
+          );
+        } catch { loadDemo(); return; }
+      } else {
+        loadDemo(); return;
+      }
+      applyFilters();
+    }
+
+    function loadDemo() {
+      baseEntries = shuffle(DEMO_NAMES).map((n, i) => ({
+        ...n, isReal: false, palette: PALETTES[i % PALETTES.length], idx: i
+      }));
+      applyFilters();
+    }
+
+    function updateCount() { countEl.textContent = shown + ' of ' + filtered.length; }
+
+    function applyFilters() {
+      filtered = searchQ
+        ? baseEntries.filter(e => (e.first + ' ' + e.last).toLowerCase().includes(searchQ))
+        : [...baseEntries];
+      grid.innerHTML = ''; shown = 0;
+      noResults.style.display = filtered.length === 0 ? 'block' : 'none';
+      if (filtered.length) loadMore(); else updateCount();
+    }
+
+    function loadMore() {
+      const next = Math.min(shown + PAGE_SIZE, filtered.length);
+      for (let i = shown; i < next; i++) {
+        const e = filtered[i];
+        const card = document.createElement('div'); card.className = 'card';
+        const iw = document.createElement('div'); iw.className = 'card-img';
+        const c = e.isReal ? makeImageCanvas(400, 300, e.url) : makeDemoCanvas(400, 300, e.palette, e.idx);
+        iw.appendChild(c);
+        const sh = document.createElement('div'); sh.className = 'card-shield'; iw.appendChild(sh);
+        const cap = document.createElement('div'); cap.className = 'card-caption';
+        cap.innerHTML = `<div class="card-name">${dName(e.first, e.last)}</div><div class="card-view">View</div>`;
+        card.appendChild(iw); card.appendChild(cap);
+        card.addEventListener('click', () => openLb(i));
+        grid.appendChild(card);
+      }
+      shown = next; updateCount();
+      document.getElementById('load-more-wrap').classList.toggle('hidden', shown >= filtered.length);
+    }
+
+    function openLb(i) {
+      lbIdx = i; const e = filtered[i];
+      const src = e.isReal ? makeImageCanvas(820, 615, e.url) : makeDemoCanvas(820, 615, e.palette, e.idx);
+      lbCanvas.width = src.width; lbCanvas.height = src.height;
+      lbCanvas.getContext('2d').drawImage(src, 0, 0);
+      if (e.isReal) {
+        const img = new Image(); img.crossOrigin = 'anonymous';
+        img.onload = () => {
+          const ctx = lbCanvas.getContext('2d');
+          const s = Math.max(820 / img.naturalWidth, 615 / img.naturalHeight);
+          const sw = img.naturalWidth * s, sh = img.naturalHeight * s;
+          ctx.clearRect(0,0,820,615);
+          ctx.drawImage(img, (820 - sw) / 2, (615 - sh) / 2, sw, sh);
+        };
+        img.src = e.url;
+      }
+      lbName.textContent = dName(e.first, e.last);
+      lbOverlay.classList.add('open');
+    }
+
+    document.getElementById('lb-close').onclick = () => lbOverlay.classList.remove('open');
+    lbOverlay.addEventListener('click', e => { if (e.target === lbOverlay) lbOverlay.classList.remove('open'); });
+    document.getElementById('lb-prev').onclick = () => { lbIdx = (lbIdx - 1 + shown) % shown; openLb(lbIdx); };
+    document.getElementById('lb-next').onclick = () => { lbIdx = (lbIdx + 1) % shown; openLb(lbIdx); };
+    document.addEventListener('keydown', e => {
+      if (!lbOverlay.classList.contains('open')) return;
+      if (e.key === 'ArrowLeft') document.getElementById('lb-prev').click();
+      if (e.key === 'ArrowRight') document.getElementById('lb-next').click();
+      if (e.key === 'Escape') lbOverlay.classList.remove('open');
+    });
+
+    document.getElementById('load-more').onclick = loadMore;
+
+    let st;
+    searchEl.addEventListener('input', function () {
+      clearTimeout(st);
+      clearBtn.classList.toggle('visible', this.value.length > 0);
+      st = setTimeout(() => { searchQ = this.value.trim().toLowerCase(); applyFilters(); }, 200);
+    });
+
+    clearBtn.onclick = () => {
+      searchEl.value = ''; searchQ = '';
+      clearBtn.classList.remove('visible');
+      applyFilters();
+      searchEl.focus();
+    };
+
+    init();
+  </script>
+</body>
+</html>
