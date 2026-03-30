@@ -178,6 +178,21 @@
     }
     .card:hover .card-view { opacity: 1; transform: translateY(0); }
 
+    .featured-badge {
+      position: absolute;
+      top: 8px; left: 8px;
+      z-index: 3;
+      background: rgba(255,255,255,0.92);
+      border-radius: 4px;
+      padding: 3px 7px;
+      font-size: 10px;
+      font-family: 'DM Sans', sans-serif;
+      font-weight: 500;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+      color: #111;
+    }
+
     /* ── Load more ── */
     #load-more-wrap { text-align: center; margin-top: 1.25rem; }
     #load-more {
@@ -330,8 +345,7 @@
       ['#E4D4E8','#A878C8','#685088'],['#D4E8E4','#78C0A8','#407868'],
     ];
 
-    // ── In production, replace this with your Google Sheet CSV URL ──
-    const SHEET_CSV_URL = '';
+    const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjgaU9R0HkOYxMojb3CAQ0E0-wAaLMHejbEB1aPKG_xw-chZwJJBv9_inZUSVc2J_clRTXDASNLKlf/pub?gid=0&single=true&output=csv';
 
     const DEMO_NAMES = [
       {first:'Margot',last:'Villeneuve'},{first:'James',last:'Thornton'},
@@ -425,15 +439,15 @@
           const res = await fetch('https://corsproxy.io/?' + encodeURIComponent(SHEET_CSV_URL));
           const text = await res.text();
           let rows = parseCSV(text).slice(1);
-          baseEntries = shuffle(
-            rows
-              .filter(r => r[0] && (r[3] || '').trim().toLowerCase() === 'approved')
-              .map((r, i) => ({
-                url: r[0].replace(/^"|"$/g, '').trim(),
-                first: r[1] || '', last: r[2] || '',
-                isReal: true, palette: PALETTES[i % PALETTES.length], idx: i
-              }))
-          );
+          const approved = rows.filter(r => r[0] && (r[3] || '').trim().toLowerCase() === 'approved');
+          const featuredRows = approved.filter(r => (r[6] || '').trim().toLowerCase() === 'yes');
+          const restRows = shuffle(approved.filter(r => (r[6] || '').trim().toLowerCase() !== 'yes'));
+          baseEntries = [...featuredRows, ...restRows].map((r, i) => ({
+            url: r[0].replace(/^"|"$/g, '').trim(),
+            first: r[1] || '', last: r[2] || '',
+            featured: (r[6] || '').trim().toLowerCase() === 'yes',
+            isReal: true, palette: PALETTES[i % PALETTES.length], idx: i
+          }));
         } catch { loadDemo(); return; }
       } else {
         loadDemo(); return;
@@ -468,6 +482,10 @@
         const c = e.isReal ? makeImageCanvas(400, 300, e.url) : makeDemoCanvas(400, 300, e.palette, e.idx);
         iw.appendChild(c);
         const sh = document.createElement('div'); sh.className = 'card-shield'; iw.appendChild(sh);
+        if (e.featured) {
+          const badge = document.createElement('div'); badge.className = 'featured-badge'; badge.textContent = '★ Featured';
+          iw.appendChild(badge);
+        }
         const cap = document.createElement('div'); cap.className = 'card-caption';
         cap.innerHTML = `<div class="card-name">${dName(e.first, e.last)}</div><div class="card-view">View</div>`;
         card.appendChild(iw); card.appendChild(cap);
