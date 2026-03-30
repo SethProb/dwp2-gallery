@@ -345,7 +345,7 @@
       ['#E4D4E8','#A878C8','#685088'],['#D4E8E4','#78C0A8','#407868'],
     ];
 
-    const SHEET_CSV_URL = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTjgaU9R0HkOYxMojb3CAQ0E0-wAaLMHejbEB1aPKG_xw-chZwJJBv9_inZUSVc2J_clRTXDASNLKlf/pub?gid=0&single=true&output=csv';
+    const SHEET_CSV_URL = '/api/sheet';
 
     const DEMO_NAMES = [
       {first:'Margot',last:'Villeneuve'},{first:'James',last:'Thornton'},
@@ -436,7 +436,7 @@
     async function init() {
       if (SHEET_CSV_URL) {
         try {
-          const res = await fetch('https://corsproxy.io/?' + encodeURIComponent(SHEET_CSV_URL));
+          const res = await fetch(SHEET_CSV_URL);
           const text = await res.text();
           let rows = parseCSV(text).slice(1);
           const approved = rows.filter(r => r[0] && (r[3] || '').trim().toLowerCase() === 'approved');
