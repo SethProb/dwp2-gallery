@@ -4,7 +4,7 @@
 
   // ── Config ──────────────────────────────────────────────
   const API_URL     = 'https://dwp2-gallery.vercel.app/api/sheet';
-  const FONT_URL    = 'https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;1,400&family=DM+Sans:wght@300;400;500&display=swap';
+  const FONT_URL    = null; // fonts loaded globally via @font-face
   const PAGE_SIZE   = 9;
   const TARGET_SEL  = '#dwp2-gallery';
   // ────────────────────────────────────────────────────────
@@ -18,27 +18,21 @@
     ['#D4E4EC','#70A8C8','#405878'],['#ECE4D4','#C8A07A','#885840'],
   ];
 
-  // ── Inject fonts ────────────────────────────────────────
-  if (!document.querySelector('link[data-dwp2-fonts]')) {
-    const l = document.createElement('link');
-    l.rel = 'stylesheet'; l.href = FONT_URL;
-    l.setAttribute('data-dwp2-fonts', '1');
-    document.head.appendChild(l);
-  }
+  // fonts loaded globally via @font-face — no injection needed
 
   // ── Inject styles ───────────────────────────────────────
   const CSS = `
-    .dwp2-wrap { font-family: 'DM Sans', sans-serif; user-select: none; -webkit-user-select: none; padding: 1.5rem 0; }
+    .dwp2-wrap { font-family: 'Archivo', sans-serif; user-select: none; -webkit-user-select: none; padding: 1.5rem 0; }
     .dwp2-hdr { display: flex; align-items: center; justify-content: space-between; gap: 16px; border-bottom: 0.5px solid #e0e0e0; padding-bottom: 14px; margin-bottom: 1.5rem; flex-wrap: wrap; }
     .dwp2-hdr-left { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
-    .dwp2-title { font-family: 'Playfair Display', serif; font-size: 22px; font-weight: 400; letter-spacing: -0.02em; line-height: 1; color: #111; }
+    .dwp2-title { font-family: 'Meno Display', serif; font-size: 22px; font-weight: 800; letter-spacing: -0.02em; line-height: 1; color: #111; }
     .dwp2-count { font-size: 11px; color: #888; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 4px; }
     .dwp2-search { display: flex; align-items: center; border: 0.5px solid #ccc; border-radius: 8px; background: #fff; height: 32px; width: 200px; flex-shrink: 0; overflow: hidden; transition: border-color 0.15s; }
     .dwp2-search:hover { border-color: #aaa; }
-    .dwp2-search:focus-within { border-color: #999; box-shadow: 0 0 0 2px rgba(0,0,0,0.05); }
+    .dwp2-search:focus-within { border-color: #cb2c30; box-shadow: 0 0 0 2px rgba(203,44,48,0.15); }
     .dwp2-search-icon { width: 30px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; }
     .dwp2-search-icon svg { width: 12px; height: 12px; stroke: #888; opacity: 0.5; display: block; }
-    .dwp2-search input { flex: 1; min-width: 0; height: 100%; font-family: 'DM Sans', sans-serif; font-size: 13px; color: #111; background: transparent; border: none; border-left: 0.5px solid #e5e5e5; outline: none; box-shadow: none; -webkit-appearance: none; appearance: none; padding: 0 8px; margin: 0; }
+    .dwp2-search input { flex: 1; min-width: 0; height: 100%; font-family: 'Archivo', sans-serif; font-size: 13px; color: #111; background: transparent; border: none; border-left: 0.5px solid #e5e5e5; outline: none; box-shadow: none; -webkit-appearance: none; appearance: none; padding: 0 8px; margin: 0; }
     .dwp2-search input::placeholder { color: #bbb; }
     .dwp2-clear { flex-shrink: 0; width: 0; overflow: hidden; display: flex; align-items: center; justify-content: center; background: transparent; border: none; outline: none; cursor: pointer; padding: 0; color: #888; font-size: 11px; line-height: 1; opacity: 0; transition: width 0.15s, opacity 0.15s; }
     .dwp2-clear.visible { width: 24px; opacity: 0.45; pointer-events: all; }
@@ -52,15 +46,15 @@
     .dwp2-card-img canvas { width: 100%; height: 100%; display: block; transition: transform 0.45s cubic-bezier(0.25, 0.46, 0.45, 0.94); }
     .dwp2-card:hover .dwp2-card-img canvas { transform: scale(1.06); }
     .dwp2-card-shield { position: absolute; inset: 0; z-index: 2; }
-    .dwp2-featured-badge { position: absolute; top: 8px; left: 8px; z-index: 3; background: rgba(255,255,255,0.92); border-radius: 4px; padding: 3px 7px; font-size: 10px; font-family: 'DM Sans', sans-serif; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: #111; }
+    .dwp2-featured-badge { position: absolute; top: 8px; left: 8px; z-index: 3; background: #cb2c30; border-radius: 4px; padding: 3px 7px; font-size: 10px; font-family: 'Archivo', sans-serif; font-weight: 500; letter-spacing: 0.06em; text-transform: uppercase; color: #ffffff; }
     .dwp2-card-caption { padding: 9px 11px 11px; border-top: 0.5px solid #ebebeb; background: #fff; transition: background 0.15s; }
     .dwp2-card:hover .dwp2-card-caption { background: #fafafa; }
-    .dwp2-card-name { font-family: 'Playfair Display', serif; font-style: italic; font-size: 13px; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
+    .dwp2-card-name { font-family: 'Didot', serif; font-style: italic; font-size: 13px; color: #111; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; line-height: 1.3; }
     .dwp2-card-view { font-size: 10px; color: #999; letter-spacing: 0.06em; text-transform: uppercase; margin-top: 4px; opacity: 0; transform: translateY(3px); transition: opacity 0.2s, transform 0.2s; }
     .dwp2-card:hover .dwp2-card-view { opacity: 1; transform: translateY(0); }
     .dwp2-load-wrap { text-align: center; margin-top: 1.25rem; }
-    .dwp2-load-btn { font-size: 13px; padding: 9px 28px; cursor: pointer; font-family: 'DM Sans', sans-serif; letter-spacing: 0.03em; background: #fff; border: 0.5px solid #ccc; border-radius: 8px; color: #111; transition: background 0.15s, border-color 0.15s; }
-    .dwp2-load-btn:hover { background: #f5f5f5; border-color: #aaa; }
+    .dwp2-load-btn { font-size: 13px; padding: 9px 28px; cursor: pointer; font-family: 'Archivo', sans-serif; letter-spacing: 0.03em; background: #fff; border: 0.5px solid #cb2c30; border-radius: 8px; color: #111; transition: background 0.15s, color 0.15s, border-color 0.15s; }
+    .dwp2-load-btn:hover { background: #cb2c30; color: #ffffff; border-color: #cb2c30; }
     .dwp2-load-wrap.hidden { display: none; }
     .dwp2-no-results { text-align: center; padding: 3rem 0; font-size: 13px; color: #888; display: none; }
     .dwp2-lb { display: none; position: fixed; inset: 0; background: rgba(8,8,8,0.9); z-index: 999999; align-items: center; justify-content: center; flex-direction: column; gap: 14px; padding: 20px; }
@@ -70,10 +64,10 @@
     .dwp2-lb-shield { position: absolute; inset: 0; border-radius: 6px; }
     .dwp2-lb-close { position: fixed; top: 20px; right: 24px; width: 36px; height: 36px; border-radius: 50%; background: rgba(255,255,255,0.1); border: 0.5px solid rgba(255,255,255,0.2); color: rgba(255,255,255,0.7); font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; z-index: 1000000; transition: background 0.15s, color 0.15s; }
     .dwp2-lb-close:hover { background: rgba(255,255,255,0.22); color: #fff; }
-    .dwp2-lb-name { font-family: 'Playfair Display', serif; font-style: italic; font-size: 18px; color: rgba(255,255,255,0.92); text-align: center; }
+    .dwp2-lb-name { font-family: 'Didot', serif; font-style: italic; font-size: 18px; color: rgba(255,255,255,0.92); text-align: center; }
     .dwp2-lb-nav { display: flex; gap: 8px; }
-    .dwp2-lb-nav button { background: rgba(255,255,255,0.08); border: 0.5px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.65); padding: 8px 22px; border-radius: 4px; cursor: pointer; font-size: 13px; font-family: 'DM Sans', sans-serif; min-width: 80px; transition: background 0.15s, color 0.15s; }
-    .dwp2-lb-nav button:hover { background: rgba(255,255,255,0.2); color: #fff; }
+    .dwp2-lb-nav button { background: rgba(255,255,255,0.08); border: 0.5px solid rgba(255,255,255,0.15); color: rgba(255,255,255,0.65); padding: 8px 22px; border-radius: 4px; cursor: pointer; font-size: 13px; font-family: 'Archivo', sans-serif; min-width: 80px; transition: background 0.15s, color 0.15s, border-color 0.15s; }
+    .dwp2-lb-nav button:hover { background: #cb2c30; color: #ffffff; border-color: #cb2c30; }
   `;
 
   if (!document.querySelector('style[data-dwp2]')) {
