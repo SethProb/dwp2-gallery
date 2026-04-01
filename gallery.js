@@ -1,6 +1,4 @@
 (function () {
-  if (window.__DWP2GalleryLoaded) return;
-  window.__DWP2GalleryLoaded = true;
 
   // ── Config ──────────────────────────────────────────────
   const API_URL     = 'https://dwp2-gallery.vercel.app/api/sheet';
@@ -70,12 +68,13 @@
     .dwp2-lb-nav button:hover { background: #cb2c30; color: #ffffff; border-color: #cb2c30; }
   `;
 
-  if (!document.querySelector('style[data-dwp2]')) {
-    const s = document.createElement('style');
-    s.setAttribute('data-dwp2', '1');
-    s.textContent = CSS;
-    document.head.appendChild(s);
-  }
+  // Always remove and re-inject styles so updates take effect immediately
+  const existing = document.querySelector('style[data-dwp2]');
+  if (existing) existing.remove();
+  const s = document.createElement('style');
+  s.setAttribute('data-dwp2', '1');
+  s.textContent = CSS;
+  document.head.appendChild(s);
 
   // ── Helpers ─────────────────────────────────────────────
   function shuffle(a) {
